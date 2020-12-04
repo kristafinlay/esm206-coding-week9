@@ -1,0 +1,81 @@
+---
+title: "Part1_multilinear_reg_week9"
+author: "Krista Finlay"
+date: "12/3/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(tidyverse)
+library(palmerpenguins)
+library(GGally)
+library(stargazer)
+```
+
+
+####Visualizations with the pairs plot
+```{r}
+penguins %>% 
+  ggpairs()
+```
+
+####More mangameable information
+
+```{r}
+penguins %>% 
+  select(species, bill_length_mm:body_mass_g) %>% 
+  ggpairs(aes(color = species))
+```
+
+### Build a few diffferent models. Where penguins mass is the dependent variable, with different combination of predictor variables, and then compare them.
+
+```{r}
+lm1 <- lm(body_mass_g ~ flipper_length_mm + species, data = penguins)
+summary(lm1)
+lm2 <- lm(body_mass_g ~ flipper_length_mm + species + sex, data = penguins)
+summary(lm2)
+lm3 <- lm(body_mass_g ~ flipper_length_mm + species + sex + bill_length_mm, data = penguins)
+summary(lm3)
+lm4 <- lm(body_mass_g ~ flipper_length_mm + species + sex + bill_length_mm + island, data = penguins)
+lm4
+```
+
+####Metric to use to compare the quality of a model in terms of the balance between overall model fit and model complexity, can do this by using AIC. The lower the AIC value, the better the balance is, based on this metric.
+
+##Find the AIC value for each model
+
+```{r}
+AIC(lm1)
+AIC(lm2)
+AIC(lm3) #Lowest value, best balance of model fit and complexity
+AIC(lm4) #added island, AIC goes up
+```
+
+### Use the stargazer package for a table with multiple model outputs, to show results of multiple regresson models, regression tables
+
+```{r, results = 'asis'}
+stargazer(lm1, lm3, lm4, type = "html")
+```
+
+###Omitted variable bias in action
+
+```{r}
+#Simpsons paradox, interpretation reversed if wrongly omitted variable
+
+ggplot(data = penguins, aes(x = flipper_length_mm, y = bill_depth_mm))+
+  geom_point()+
+  geom_smooth(method = "lm")  #adds trendline
+#negative relationship between bill length and flipper length
+```
+
+####Now add species as a variable
+
+```{r}
+ggplot(data = penguins, aes(x = flipper_length_mm, y = bill_depth_mm, group = species))+  #recognize the group species level
+  geom_point(aes(color = species))+
+  geom_smooth(method = "lm")
+#show flipper length and bill depth within each species, relationship is now reversed
+```
+
