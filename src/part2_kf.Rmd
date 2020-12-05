@@ -1,0 +1,91 @@
+---
+title: "Part2_chisquare"
+author: "Krista Finlay"
+date: "12/4/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(tidyverse)
+library(here)
+library(janitor)
+library(broom)
+```
+
+###In Part 2 we will do an introduction to chi-square test for independence in R using lizard tail breakage data recorded at Jornada Basin Long Term Ecological Research site.
+
+####Read in the lizard.csv data and take a look (using View (lizards) in the console) to familiarize yourself with the data structure:
+
+```{r}
+lizards <- read_csv(here("data", "lizards.csv"))
+```
+
+Get the counts of each lizard by species in the data:
+```{r}
+lizards %>% 
+  count(spp) %>% 
+  arrange(-n)
+#The most commonly observed lizard is UTST, so just explore that species
+```
+
+###Make a subset from lizards data that only contains observations for:
+
+- UTST lizards
+- only for sites: IBPE (enclosure grasslands site), RABB (rabbit mesquite site) and EAST (east tarbush site) (maybe different flora landscapre, are the proportion of lizards with broken tails the same or different)
+- where the tail condition is recorded as either as W (whole) or B (broken)
+
+```{r}
+utst <- lizards %>% 
+  filter(spp == "UTST") %>% 
+  filter(site %in% c("IBPE", "RABB", "EAST")) %>% 
+  filter(tail %in% c("B", "W"))
+```
+
+####Find counts and proportions of lizards with broken or whole tails at each site (and put in a table)
+- Use the janitor::tabyl() function
+
+```{r}
+utst %>% 
+  count(site, tail)
+#Table it ok
+```
+
+####System for contingency format tables
+
+```{r}
+tail_counts <- utst %>% 
+  janitor::tabyl(site, tail)
+
+#And you can make a table with both counts and proportions, shows percentage of lizards at each site with broken or whole tails
+tail_proportions <- tail_counts %>% 
+  janitor::adorn_percentages() %>% 
+  janitor::adorn_pct_formatting(digits = 2) %>% 
+  janitor::adorn_ns()
+#can update with kable and kableExtra
+```
+
+
+####Is there a significant association between site and tail breakage, do I have enough evidence to reject the null hypothesis that tail breakage is independent of site
+
+###Convert to a contingency table
+Use 'column_to_rowname()' to convert entries in a column to stored rownames
+
+```{r}
+lizard_count <- tail_counts %>% 
+  column_to_rownames(var = "site")
+```
+
+####Now we will run a Chi-square
+
+```{r}
+lizard_x2 <- chisq.test(lizard_count)
+lizard_x2
+
+lizard_tidy <- broom::tidy(lizard_x2)
+```
+
+
+
+

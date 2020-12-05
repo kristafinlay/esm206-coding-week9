@@ -21,7 +21,7 @@ penguins %>%
   ggpairs()
 ```
 
-####More mangameable information
+####More managable information
 
 ```{r}
 penguins %>% 
@@ -37,7 +37,7 @@ summary(lm1)
 lm2 <- lm(body_mass_g ~ flipper_length_mm + species + sex, data = penguins)
 summary(lm2)
 lm3 <- lm(body_mass_g ~ flipper_length_mm + species + sex + bill_length_mm, data = penguins)
-summary(lm3)
+lm3
 lm4 <- lm(body_mass_g ~ flipper_length_mm + species + sex + bill_length_mm + island, data = penguins)
 lm4
 ```
